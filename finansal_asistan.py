@@ -48,7 +48,7 @@ def daily_revenue_graph(df, option=1):
 
     perc = round(((df.last(f'{str(int(option) * 2)}D')['Sales_Amount'].sum() - df.last(f'{option}D')['Sales_Amount'].sum()) / df.last(f'{option}D')['Sales_Amount'].sum()) * 100 - 100, 2)
 
-    return fig, perc
+    return (fig, perc)
 
 def weekly_revenue_graph(df):
 
@@ -96,7 +96,7 @@ def daily_forecast_graph(df):
         plt.title('7 Günlük Ciro Tahmini')
 
 
-        return fig, y_forecast
+        return (fig, y_forecast)
 
 def weekly_forecast_graph(df):
      
@@ -115,7 +115,7 @@ def weekly_forecast_graph(df):
         plt.legend(loc='best')
         plt.title('4 Haftalık Ciro Tahmini')
 
-        return fig, y_forecast
+        return (fig, y_forecast)
 
 def financial_status_page(file_path):
 
@@ -165,7 +165,7 @@ def pareto_analysis_revenue(df, option):
      df_pareto_prod2 = df_pareto_prod[df_pareto_prod.cumperc <= 50]
      prod_num = df_pareto['SKU'].nunique()
 
-     return fig, df_pareto_cat, df_pareto_cat2, df_pareto_prod2, prod_num
+     return (fig, df_pareto_cat, df_pareto_cat2, df_pareto_prod2, prod_num)
 
 def pareto_analysis_quantity(df, option):
         df.Date = pd.to_datetime(df.Date, format='%d/%m/%Y')
@@ -192,7 +192,7 @@ def pareto_analysis_quantity(df, option):
         df_pareto_prod2 = df_pareto_prod[df_pareto_prod.cumperc <= 50]
         prod_num = df_pareto['SKU'].nunique()
     
-        return fig, df_pareto_cat, df_pareto_cat2, df_pareto_prod2, prod_num
+        return (fig, df_pareto_cat, df_pareto_cat2, df_pareto_prod2, prod_num)
 
      
     
