@@ -109,7 +109,7 @@ def weekly_forecast_graph(df):
     fig = plt.figure(figsize=(15, 5))
     plt.plot(train.last('4W').index, train.last('4W').values, label='Train', color='blue', linestyle='-')
     plt.plot(test.index, test.values, label='Test', color='orange', linestyle='-')
-    plt.plot(y_test_pred.index, y_test_pred.values[:, 0], label='Forecast', color='green', linestyle='-')
+    plt.plot(y_test_pred.index, y_test_pred.values, label='Forecast', color='green', linestyle='-')
 
     plt.legend(loc='best')
     plt.title('4 Haftalık Ciro Tahmini')
