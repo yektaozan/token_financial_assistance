@@ -19,6 +19,7 @@ import re
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+
 def upload_data(file_path):
 
     if 'csv' in file_path:
@@ -79,43 +80,41 @@ def forecast(train, sl, st, ss, step=5):
         return y_pred
  
 def daily_forecast_graph(df):
-    
-        df = df.reset_index().groupby([pd.Grouper(key='Date', freq='D')]).sum()
-    
-        train = df[~df.index.isin(df.last('31D').index.to_list())]['Sales_Amount']
-        test = df.last('31D')['Sales_Amount']
-    
-        y_test_pred = forecast(train, sl=0.8, st=0.7, ss=0.3, step=38)
-        y_forecast = pd.DataFrame(np.round(y_test_pred[-7:], 0), columns=['Günlük Tahmin'], index=y_test_pred[-7:].index.date)
+    df = df.reset_index().groupby([pd.Grouper(key='Date', freq='D')]).sum()
 
-        fig = plt.figure(figsize=(15, 5))
-        plt.plot(train.last('30D').index, train.last('30D').values, label='Train', color='blue', linestyle='-')
-        plt.plot(test.index, test.values, label='Test', color='orange', linestyle='-')
-        plt.plot(y_test_pred.index, y_test_pred.values, label='Forecast', color='green', linestyle='-')
-        plt.legend(loc='best')
-        plt.title('7 Günlük Ciro Tahmini')
+    train = df[~df.index.isin(df.last('31D').index.to_list())]['Sales_Amount']
+    test = df.last('31D')['Sales_Amount']
 
+    y_test_pred = forecast(train, sl=0.8, st=0.7, ss=0.3, step=38)
+    y_forecast = pd.DataFrame(np.round(y_test_pred[-7:], 0), columns=['Günlük Tahmin'], index=y_test_pred[-7:].index.date)
 
-        return (fig, y_forecast)
+    fig = plt.figure(figsize=(15, 5))
+    plt.plot(train.last('30D').index, train.last('30D').values, label='Train', color='blue', linestyle='-')
+    plt.plot(test.index, test.values, label='Test', color='orange', linestyle='-')
+    plt.plot(y_test_pred.index, y_test_pred.values, label='Forecast', color='green', linestyle='-')
+    plt.legend(loc='best')
+    plt.title('7 Günlük Ciro Tahmini')
+
+    return (fig, y_forecast)
 
 def weekly_forecast_graph(df):
-     
-        df = df.reset_index().groupby([pd.Grouper(key='Date', freq='W')]).sum()
-    
-        train = df[~df.index.isin(df.last('4W').index.to_list())]['Sales_Amount']
-        test = df.last('4W')['Sales_Amount']
-    
-        y_test_pred = forecast(train, sl=0.1, st=0.7, ss=0.3, step=8)
-        y_forecast = pd.DataFrame(np.round(y_test_pred[-4:], 0), columns=['Haftalık Tahmin'], index=y_test_pred[-4:].index.date)
+    df = df.reset_index().groupby([pd.Grouper(key='Date', freq='W')]).sum()
 
-        fig = plt.figure(figsize=(15, 5))
-        plt.plot(train.last('4W').index, train.last('4W').values, label='Train', color='blue', linestyle='-')
-        plt.plot(test.index, test.values, label='Test', color='orange', linestyle='-')
-        plt.plot(y_test_pred.index, y_test_pred.values, label='Forecast', color='green', linestyle='-')
-        plt.legend(loc='best')
-        plt.title('4 Haftalık Ciro Tahmini')
+    train = df[~df.index.isin(df.last('4W').index.to_list())]['Sales_Amount']
+    test = df.last('4W')['Sales_Amount']
 
-        return (fig, y_forecast)
+    y_test_pred = forecast(train, sl=0.1, st=0.7, ss=0.3, step=8)
+    y_forecast = pd.DataFrame(np.round(y_test_pred[-4:], 0), columns=['Haftalık Tahmin'], index=y_test_pred[-4:].index.date)
+
+    fig = plt.figure(figsize=(15, 5))
+    plt.plot(train.last('4W').index, train.last('4W').values, label='Train', color='blue', linestyle='-')
+    plt.plot(test.index, test.values, label='Test', color='orange', linestyle='-')
+    plt.plot(y_test_pred.index, y_test_pred.values[:, 0], label='Forecast', color='green', linestyle='-')
+
+    plt.legend(loc='best')
+    plt.title('4 Haftalık Ciro Tahmini')
+
+    return (fig, y_forecast)
 
 def financial_status_page(file_path):
 
@@ -141,58 +140,58 @@ def financial_status_page(file_path):
         st.dataframe(weekly_forecast_graph(df)[1])
 
 def pareto_analysis_revenue(df, option):
-     df.Date = pd.to_datetime(df.Date, format='%d/%m/%Y')
-     df_pareto = df.sort_values(by='Date', ascending=True)
-     df_pareto.set_index('Date', inplace=True)
-     df_pareto = df_pareto.last(f'{option}M')
-     df_pareto_cat = df_pareto.groupby('SKU_Category').agg({'Sales_Amount': 'sum'}).reset_index().sort_values(by='Sales_Amount', ascending=False)
-     df_pareto_cat['cumperc'] = df_pareto_cat.Sales_Amount.cumsum() / df_pareto_cat.Sales_Amount.sum() * 100
-     df_pareto_cat2 = df_pareto_cat[df_pareto_cat.cumperc <= 50]
+    df.Date = pd.to_datetime(df.Date, format='%d/%m/%Y')
+    df_pareto = df.sort_values(by='Date', ascending=True)
+    df_pareto.set_index('Date', inplace=True)
+    df_pareto = df_pareto.last(f'{option}M')
+    df_pareto_cat = df_pareto.groupby('SKU_Category').agg({'Sales_Amount': 'sum'}).reset_index().sort_values(by='Sales_Amount', ascending=False)
+    df_pareto_cat['cumperc'] = df_pareto_cat.Sales_Amount.cumsum() / df_pareto_cat.Sales_Amount.sum() * 100
+    df_pareto_cat2 = df_pareto_cat[df_pareto_cat.cumperc <= 50]
 
-     color1 = 'steelblue'
-     color2 = 'red'
-     line_size = 4
-     fig, ax = plt.subplots()
-     ax.bar(df_pareto_cat2['SKU_Category'], df_pareto_cat2['Sales_Amount'], color=color1)
-     ax2 = ax.twinx()
-     ax2.plot(df_pareto_cat2['SKU_Category'], df_pareto_cat2['cumperc'], color=color2, marker="D", ms=line_size)
-     ax2.yaxis.set_major_formatter(PercentFormatter())
-     ax.tick_params(axis='y', colors=color1)
-     ax2.tick_params(axis='y', colors=color2)
+    color1 = 'steelblue'
+    color2 = 'red'
+    line_size = 4
+    fig, ax = plt.subplots()
+    ax.bar(df_pareto_cat2['SKU_Category'], df_pareto_cat2['Sales_Amount'], color=color1)
+    ax2 = ax.twinx()
+    ax2.plot(df_pareto_cat2['SKU_Category'], df_pareto_cat2['cumperc'], color=color2, marker="D", ms=line_size)
+    ax2.yaxis.set_major_formatter(PercentFormatter())
+    ax.tick_params(axis='y', colors=color1)
+    ax2.tick_params(axis='y', colors=color2)
 
-     df_pareto_prod = df_pareto[df_pareto.SKU_Category.isin(df_pareto_cat2.SKU_Category.unique())].groupby('SKU').agg({'Sales_Amount': 'sum'}).reset_index().sort_values(by='Sales_Amount', ascending=False)
-     df_pareto_prod['cumperc'] = df_pareto_prod.Sales_Amount.cumsum() / df_pareto.Sales_Amount.sum() * 100
-     df_pareto_prod2 = df_pareto_prod[df_pareto_prod.cumperc <= 50]
-     prod_num = df_pareto['SKU'].nunique()
+    df_pareto_prod = df_pareto[df_pareto.SKU_Category.isin(df_pareto_cat2.SKU_Category.unique())].groupby('SKU').agg({'Sales_Amount': 'sum'}).reset_index().sort_values(by='Sales_Amount', ascending=False)
+    df_pareto_prod['cumperc'] = df_pareto_prod.Sales_Amount.cumsum() / df_pareto.Sales_Amount.sum() * 100
+    df_pareto_prod2 = df_pareto_prod[df_pareto_prod.cumperc <= 50]
+    prod_num = df_pareto['SKU'].nunique()
 
-     return (fig, df_pareto_cat, df_pareto_cat2, df_pareto_prod2, prod_num)
+    return (fig, df_pareto_cat, df_pareto_cat2, df_pareto_prod2, prod_num)
 
 def pareto_analysis_quantity(df, option):
-        df.Date = pd.to_datetime(df.Date, format='%d/%m/%Y')
-        df_pareto = df.sort_values(by='Date', ascending=True)
-        df_pareto.set_index('Date', inplace=True)
-        df_pareto = df_pareto.last(f'{option}M')
-        df_pareto_cat = df_pareto.groupby('SKU_Category').agg({'Quantity': 'sum'}).reset_index().sort_values(by='Quantity', ascending=False)
-        df_pareto_cat['cumperc'] = df_pareto_cat.Quantity.cumsum() / df_pareto_cat.Quantity.sum() * 100
-        df_pareto_cat2 = df_pareto_cat[df_pareto_cat.cumperc <= 50]
-    
-        color1 = 'steelblue'
-        color2 = 'red'
-        line_size = 4
-        fig, ax = plt.subplots()
-        ax.bar(df_pareto_cat2['SKU_Category'], df_pareto_cat2['Quantity'], color=color1)
-        ax2 = ax.twinx()
-        ax2.plot(df_pareto_cat2['SKU_Category'], df_pareto_cat2['cumperc'], color=color2, marker="D", ms=line_size)
-        ax2.yaxis.set_major_formatter(PercentFormatter())
-        ax.tick_params(axis='y', colors=color1)
-        ax2.tick_params(axis='y', colors=color2)
-    
-        df_pareto_prod = df_pareto[df_pareto.SKU_Category.isin(df_pareto_cat2.SKU_Category.unique())].groupby('SKU').agg({'Quantity': 'sum'}).reset_index().sort_values(by='Quantity', ascending=False)
-        df_pareto_prod['cumperc'] = df_pareto_prod.Quantity.cumsum() / df_pareto.Quantity.sum() * 100
-        df_pareto_prod2 = df_pareto_prod[df_pareto_prod.cumperc <= 50]
-        prod_num = df_pareto['SKU'].nunique()
-    
-        return (fig, df_pareto_cat, df_pareto_cat2, df_pareto_prod2, prod_num)
+    df.Date = pd.to_datetime(df.Date, format='%d/%m/%Y')
+    df_pareto = df.sort_values(by='Date', ascending=True)
+    df_pareto.set_index('Date', inplace=True)
+    df_pareto = df_pareto.last(f'{option}M')
+    df_pareto_cat = df_pareto.groupby('SKU_Category').agg({'Quantity': 'sum'}).reset_index().sort_values(by='Quantity', ascending=False)
+    df_pareto_cat['cumperc'] = df_pareto_cat.Quantity.cumsum() / df_pareto_cat.Quantity.sum() * 100
+    df_pareto_cat2 = df_pareto_cat[df_pareto_cat.cumperc <= 50]
+
+    color1 = 'steelblue'
+    color2 = 'red'
+    line_size = 4
+    fig, ax = plt.subplots()
+    ax.bar(df_pareto_cat2['SKU_Category'], df_pareto_cat2['Quantity'], color=color1)
+    ax2 = ax.twinx()
+    ax2.plot(df_pareto_cat2['SKU_Category'], df_pareto_cat2['cumperc'], color=color2, marker="D", ms=line_size)
+    ax2.yaxis.set_major_formatter(PercentFormatter())
+    ax.tick_params(axis='y', colors=color1)
+    ax2.tick_params(axis='y', colors=color2)
+
+    df_pareto_prod = df_pareto[df_pareto.SKU_Category.isin(df_pareto_cat2.SKU_Category.unique())].groupby('SKU').agg({'Quantity': 'sum'}).reset_index().sort_values(by='Quantity', ascending=False)
+    df_pareto_prod['cumperc'] = df_pareto_prod.Quantity.cumsum() / df_pareto.Quantity.sum() * 100
+    df_pareto_prod2 = df_pareto_prod[df_pareto_prod.cumperc <= 50]
+    prod_num = df_pareto['SKU'].nunique()
+
+    return (fig, df_pareto_cat, df_pareto_cat2, df_pareto_prod2, prod_num)
 
      
     
