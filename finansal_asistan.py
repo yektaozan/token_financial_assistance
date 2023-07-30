@@ -89,9 +89,9 @@ def daily_forecast_graph(df):
         y_forecast = pd.DataFrame(np.round(y_test_pred[-7:], 0), columns=['Günlük Tahmin'], index=y_test_pred[-7:].index.date)
 
         fig = plt.figure(figsize=(15, 5))
-        plt.plot(train.last('30D').index, train.last('30D'), label='Train', color='blue', linestyle='-')
-        plt.plot(test.index, test, label='Test', color='orange', linestyle='-')
-        plt.plot(y_test_pred.index, y_test_pred, label='Forecast', color='green', linestyle='-')
+        plt.plot(train.last('30D').index, train.last('30D')['Sales_Amount'], label='Train', color='blue', linestyle='-')
+        plt.plot(test.index, test['Sales_Amount'], label='Test', color='orange', linestyle='-')
+        plt.plot(y_test_pred.index, y_test_pred['Günlük Tahmin'], label='Forecast', color='green', linestyle='-')
         plt.legend(loc='best')
         plt.title('7 Günlük Ciro Tahmini')
 
