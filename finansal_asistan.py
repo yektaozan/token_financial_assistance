@@ -231,7 +231,7 @@ def product_analysis_page(file_path):
 st.set_page_config(layout="centered")
 st.title('Token Finansal Asistan :dart:')
 page = st.sidebar.selectbox("Sayfalar", ["Finansal Durum", "Ürün Analizi"])
-pos_image = Image.open("pos_machine.jpg")
+pos_image = Image.open("pos_machine.png")
 st.sidebar.image(pos_image, use_column_width=True)
 
 if page == "Finansal Durum":
