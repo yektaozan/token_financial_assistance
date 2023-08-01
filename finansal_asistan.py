@@ -339,6 +339,6 @@ if page == "Finansal Durum":
 elif page == "Ürün Analizi":
     product_analysis_page("scanner_data.csv")
 elif page == "Tofi":
-     file_paths = ["ciro.xlsx", "scanner_data.csv""]
+     file_paths = ["ciro.xlsx", "scanner_data.csv"]
      tofi_page(file_path=file_paths)
 
