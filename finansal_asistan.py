@@ -193,7 +193,107 @@ def pareto_analysis_quantity(df, option):
 
     return (fig, df_pareto_cat, df_pareto_cat2, df_pareto_prod2, prod_num)
 
-     
+
+def finansal_durum(file_path):
+    df = upload_data(file_path)
+    df_daily = df.groupby([pd.Grouper(key='Date', freq='D')]).sum()
+
+    last_7_days = df_daily.last('7D').reset_index().sort_values(by='Date', ascending=False)
+    last_7_days['rank'] = last_7_days['Sales_Amount'].rank(ascending=False)
+    last_7_days_rank = int(last_7_days.iloc[0, 2])
+    last_day_revenue = round(last_7_days.iloc[0, 1], 2)
+
+    last_4_weeks = df_daily.last('4W').reset_index().groupby([pd.Grouper(key='Date', freq='W')]).sum()
+    last_4_weeks = last_4_weeks.reset_index().sort_values(by='Date', ascending=False)
+    last_4_weeks['rank'] = last_4_weeks['Sales_Amount'].rank(ascending=False)
+    last_4_weeks_rank = int(last_4_weeks.iloc[0, 2])
+    last_week_revenue = round(last_4_weeks.iloc[0, 1], 2)
+
+    return (last_day_revenue, last_7_days_rank, last_week_revenue, last_4_weeks_rank)
+
+
+def urun_analizi(file_path):
+    df = upload_data(file_path)
+    df.Date = pd.to_datetime(df.Date, format='%d/%m/%Y')
+    df.set_index('Date', inplace=True)
+
+    df_last_week = df.last('7D').groupby('SKU').agg({'Sales_Amount': 'sum'}).sort_values(by='Sales_Amount',
+                                                                                         ascending=False)
+    last_week_top_3 = df_last_week.iloc[:3, :].index.tolist()
+
+    df_last_month = df.last('30D').groupby('SKU').agg({'Sales_Amount': 'sum'}).sort_values(by='Sales_Amount',
+                                                                                           ascending=False)
+    last_month_top_3 = df_last_month.iloc[:3, :].index.tolist()
+
+    df_last_3_months = df.last('90D').groupby('SKU').agg({'Sales_Amount': 'sum'}).sort_values(by='Sales_Amount',
+                                                                                              ascending=False)
+    last_3_months_top_3 = df_last_3_months.iloc[:3, :].index.tolist()
+
+    return (last_week_top_3, last_month_top_3, last_3_months_top_3)
+
+
+def kampanyalar():
+    kampanyalar = np.array(['AKBANK uygulamasını %1.5 komisyon oranıyla hemen yükle',
+                            'YAPIKREDI uygulamasını %1.3 komisyon oranıyla hemen yükle',
+                            'ING uygulamasını %1.6 komisyon oranıyla hemen yükle',
+                            'GARANTI BBVA uygulamasını %1.4 komisyon oranıyla hemen yükle',
+                            '330TR cihazının garanti süresini 2 yıl uzatmak için hemen TIKLA',
+                            '330TR cihazının garanti süresini 1 yıl uzatmak için hemen TIKLA',
+                            '300TR cihazını getir, 330TR cihazı %50 indirimle senin olsun',
+                            'Toptan TokenFlex\'te kırtasiye ürünlerinde %10 indirim',
+                            'Toptan TokenFlex\'te sebze ve meyve ürünlerinde %20 indirim',
+                            'Pürsu 1000 TL ve üzeri alışverişlerde 100 TL indirim'])
+
+    return np.random.choice(kampanyalar, size=2, replace=False).tolist()
+
+
+def tofi_page(file_path):
+    st.title("Tofi Bot")
+
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
+    q_and_a = {
+        'yardım': f'''
+Aşağıdaki komutları kullanabilirsiniz:\n
+1. Finansal Durum\n
+2. Ürün Analizi\n
+3. Kampanyalar''',
+        'finansal durum': f'''
+Dünkü toplam ciro: {finansal_durum(file_path[0])[0]} TL\n
+Dün yapılan cironun son 7 günlük ciro içindeki yeri: {finansal_durum(file_path[0])[1]}. sıra\n
+Son haftanın toplam cirosu: {finansal_durum(file_path[0])[2]} TL\n
+Son haftanın cirosunun son 4 haftalık ciro içindeki yeri: {finansal_durum(file_path[0])[3]}. sıra
+            ''',
+        'ürün analizi': f'''
+Son haftanın en çok satan 3 ürünü: {', '.join(urun_analizi(file_path[1])[0])}\n
+Son ayın en çok satan 3 ürünü: {', '.join(urun_analizi(file_path[1])[1])}\n
+Son 3 ayın en çok satan 3 ürünü: {', '.join(urun_analizi(file_path[1])[2])}
+            ''',
+        'kampanyalar': f'''
+Bugünün sana özel kampanyaları:\n
+{kampanyalar()[0]}\n
+{kampanyalar()[1]}
+            '''
+    }
+
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    if prompt := st.chat_input("Komutları görmek için 'yardım' yazın."):
+        st.chat_message("user").markdown(prompt)
+        st.session_state.messages.append({"role": "user", "content": prompt})
+
+        if prompt.lower() in q_and_a:
+            response = f" Tofi: \n{q_and_a[prompt.lower()]}"
+        else:
+            response = "Tofi: Üzgünüm, anlamadım. Lütfen tekrarlayın."
+
+        with st.chat_message("assistant"):
+            st.markdown(response)
+
+        st.session_state.messages.append({"role": "assistant", "content": response})
     
 
 def product_analysis_page(file_path):
@@ -237,5 +337,8 @@ st.sidebar.image(pos_image, use_column_width=True)
 if page == "Finansal Durum":
     financial_status_page("ciro.xlsx")
 elif page == "Ürün Analizi":
-     product_analysis_page("scanner_data.csv")
+    product_analysis_page("scanner_data.csv")
+elif page == "Tofi":
+     file_paths = ["ciro.xlsx", "scanner_data.csv""]
+     tofi_page(file_path=file_paths)
 
