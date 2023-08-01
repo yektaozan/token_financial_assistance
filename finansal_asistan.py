@@ -311,7 +311,7 @@ def product_analysis_page(file_path):
         st.write(f"Toplam Kategori Sayısı: {total_cat}")
         st.write(f"Satışların %50'sini oluşturan kategori sayısı: {pareto_cat}")
         st.write(f"""Pareto analizine göre, satışların %50'sini oluşturan kategorilerin toplam kategori sayısına oranı: %{int((pareto_cat/total_cat)*100)}""")
-        st.dataframe(pareto_analysis_revenue(df, option)[3].iloc[:20])
+        st.dataframe(pareto_analysis_revenue(df, option)[3].iloc[:20].reset_index(drop=True))
         st.write(f"Satışların % {round(pareto_analysis_revenue(df, option)[3].iloc[19, 2], 2)} Ürünlerin % {round((20 / pareto_analysis_revenue(df, option)[4]) * 100, 2)} 'üne denk gelmektedir.")
     with tab2:
         option = st.selectbox("Ürünün Adet Analizini Görmek İstediğiniz Dönem:", ('Son 1 Ay', 'Son 3 Ay', 'Son 12 Ay'))
@@ -324,7 +324,7 @@ def product_analysis_page(file_path):
         st.write(f"Toplam Kategori Sayısı: {total_cat}")
         st.write(f"Satışların %50'sini oluşturan kategori sayısı: {pareto_cat}")
         st.write(f"""Pareto analizine göre, satışların %50'sini oluşturan kategorilerin toplam kategori sayısına oranı: %{int((pareto_cat/total_cat)*100)}""")
-        st.dataframe(pareto_analysis_quantity(df, option)[3].iloc[:20])
+        st.dataframe(pareto_analysis_quantity(df, option)[3].iloc[:20].reset_index(drop=True))
         st.write(f"Satışların % {round(pareto_analysis_quantity(df, option)[3].iloc[19, 2], 2)} Ürünlerin % {round((20 / pareto_analysis_quantity(df, option)[4]) * 100, 2)} 'üne denk gelmektedir.")
 
 
