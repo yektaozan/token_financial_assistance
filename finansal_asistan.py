@@ -248,7 +248,7 @@ def kampanyalar():
 
 
 def tofi_page(file_path):
-    st.title("Tofi Bot")
+    st.title("Tofi ChatBot")
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
